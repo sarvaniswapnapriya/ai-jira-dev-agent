@@ -11,28 +11,17 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create branch
-        run: |
-          BRANCH="feature/${{ github.event.client_payload.ticket }}"
-          git checkout -b $BRANCH
-          git push origin $BRANCH
-
-      - name: Create task file
+      - name: Create ticket file
         run: |
           echo "# Jira Ticket" > ticket.md
           echo "Ticket: ${{ github.event.client_payload.ticket }}" >> ticket.md
           echo "Title: ${{ github.event.client_payload.title }}" >> ticket.md
-          git add ticket.md
-          git commit -m "Add ticket details"
-          git push origin HEAD
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
