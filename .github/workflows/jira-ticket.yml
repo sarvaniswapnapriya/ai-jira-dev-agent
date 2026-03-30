@@ -1,0 +1,36 @@
+name: Jira Ticket Automation
+
+on:
+  repository_dispatch:
+    types: [jira_ticket_created]
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Create branch
+        run: |
+          BRANCH="feature/${{ github.event.client_payload.ticket }}"
+          git checkout -b $BRANCH
+          git push origin $BRANCH
+
+      - name: Create task file
+        run: |
+          echo "# Jira Ticket" > ticket.md
+          echo "Ticket: ${{ github.event.client_payload.ticket }}" >> ticket.md
+          echo "Title: ${{ github.event.client_payload.title }}" >> ticket.md
+          git add ticket.md
+          git commit -m "Add ticket details"
+          git push
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: feature/${{ github.event.client_payload.ticket }}
+          title: "${{ github.event.client_payload.ticket }} - ${{ github.event.client_payload.title }}"
+          body: |
+            Jira Ticket: ${{ github.event.client_payload.ticket }}
